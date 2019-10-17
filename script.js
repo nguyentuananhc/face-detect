@@ -1,4 +1,5 @@
-'use strict';
+// const img1 = require('./detect-image/Tuan Anh/1.jpg')
+// const img2 = require('./detect-image/Tuan Anh/2.jpg')
 
 var constraints = {
   video: true
@@ -43,7 +44,7 @@ video.addEventListener('play', async () => {
 
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
 
-    console.log(faceMatcher)
+    // console.log(faceMatcher)
     const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor)
       // console.log(d.descriptor)
     )
@@ -54,27 +55,25 @@ video.addEventListener('play', async () => {
       drawBox.draw(canvas)
     })
 
-    // if (resizedDetections.length !== 0) {
-    //   resizedDetections.forEach((detection) => {
-    //     const box = detection.detection.box
-    //     const drawBox = new faceapi.draw.DrawBox(box, { label: 'Face' })
-    //     drawBox.draw(canvas)
-    //   })
-    // }
     // faceapi.draw.drawDetections(canvas, resizedDetections)
-    // faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
-    // faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
+    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
+    faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
   }, 100)
 })
 
 
 const getNameLabel = () => {
-  const listLabels = ['Tuan Anh', 'Truong']
+  const listLabels = ['Tuan Anh', 'Truong', 'Giang', 'Loc']
   return Promise.all(
     listLabels.map(async label => {
       const descriptions = []
       for (let i = 1; i <= 2; i++) {
         const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/nguyentuananhc/face-detect/master/detect-image/${label}/${i}.jpg`)
+        console.log(img1)
+        // const imgFromFolder = toBase64(`./detect-image/${label}/${i}.jpg`,
+        //   function (dataUrl) {
+        //     console.log("url(" + dataUrl + ")")
+        //   });
         const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
         descriptions.push(detections.descriptor)
       }

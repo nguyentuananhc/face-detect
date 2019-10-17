@@ -30,24 +30,37 @@ Promise.all([
   faceapi.nets.faceExpressionNet.loadFromUri('/models')
 ]).then(startVideo)
 
-video.addEventListener('play', () => {
+video.addEventListener('play', async () => {
   const canvas = faceapi.createCanvasFromMedia(video)
+  const labeledFaceDescriptors = await getNameLabel()
+  const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6)
   document.body.append(canvas)
   const displaySize = { width: video.width, height: video.height }
   faceapi.matchDimensions(canvas, displaySize)
   setInterval(async () => {
-    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions()
+    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions().withFaceDescriptors()
     const resizedDetections = faceapi.resizeResults(detections, displaySize)
 
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-    if (resizedDetections.length !== 0) {
-      resizedDetections.forEach((detection) => {
-        const box = detection.detection.box
-        const drawBox = new faceapi.draw.DrawBox(box, { label: 'Face' })
-        drawBox.draw(canvas)
-      })
-    }
-    // console.log(resizedDetections[0].detection.box)
+
+    console.log(faceMatcher)
+    const results = resizedDetections.map(d => faceMatcher.findBestMatch(d.descriptor)
+      // console.log(d.descriptor)
+    )
+    // console.log(results)
+    results.forEach((result, i) => {
+      const box = resizedDetections[i].detection.box
+      const drawBox = new faceapi.draw.DrawBox(box, { label: result.toString() })
+      drawBox.draw(canvas)
+    })
+
+    // if (resizedDetections.length !== 0) {
+    //   resizedDetections.forEach((detection) => {
+    //     const box = detection.detection.box
+    //     const drawBox = new faceapi.draw.DrawBox(box, { label: 'Face' })
+    //     drawBox.draw(canvas)
+    //   })
+    // }
     // faceapi.draw.drawDetections(canvas, resizedDetections)
     // faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
     // faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
@@ -59,9 +72,13 @@ const getNameLabel = () => {
   const listLabels = ['Tuan Anh']
   return Promise.all(
     listLabels.map(async label => {
-      for (let i = 1; i <= 2; i++)
+      const descriptions = []
+      for (let i = 1; i <= 2; i++) {
+        const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/nguyentuananhc/face-detect/master/detect-image/${label}/${i}.jpg`)
+        const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
+        descriptions.push(detections.descriptor)
+      }
+      return new faceapi.LabeledFaceDescriptors(label, descriptions)
     })
   )
 }
-
-// console.log(faceapi)

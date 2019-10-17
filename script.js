@@ -69,7 +69,7 @@ video.addEventListener('play', async () => {
 
 
 const getNameLabel = () => {
-  const listLabels = ['Tuan Anh']
+  const listLabels = ['Tuan Anh', 'Truong']
   return Promise.all(
     listLabels.map(async label => {
       const descriptions = []

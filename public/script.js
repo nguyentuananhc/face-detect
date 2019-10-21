@@ -34,7 +34,7 @@ Promise.all([
 video.addEventListener('play', async () => {
   const canvas = faceapi.createCanvasFromMedia(video)
   const labeledFaceDescriptors = await getNameLabel()
-  const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.6)
+  const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors, 0.7)
   document.body.append(canvas)
   const displaySize = { width: video.width, height: video.height }
   faceapi.matchDimensions(canvas, displaySize)
@@ -63,17 +63,12 @@ video.addEventListener('play', async () => {
 
 
 const getNameLabel = () => {
-  const listLabels = ['Tuan Anh', 'Truong', 'Giang', 'Loc']
+  const listLabels = ['Tuan Anh']
   return Promise.all(
     listLabels.map(async label => {
       const descriptions = []
       for (let i = 1; i <= 2; i++) {
         const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/nguyentuananhc/face-detect/master/detect-image/${label}/${i}.jpg`)
-        // console.log(img1)
-        // const imgFromFolder = toBase64(`./detect-image/${label}/${i}.jpg`,
-        //   function (dataUrl) {
-        //     console.log("url(" + dataUrl + ")")
-        //   });
         const detections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor()
         descriptions.push(detections.descriptor)
       }
